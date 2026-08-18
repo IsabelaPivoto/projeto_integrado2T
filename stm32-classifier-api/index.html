@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="Sistema de monitoramento e classificação do nível de satisfação"
+    >
+
+    <title>Monitor de Satisfação</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 0 50px;
+        }
+
+        /* HEADER */
+
+        header {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            border-left: 5px solid #2563eb;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .titulo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .titulo h1 {
+            font-size: 30px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .titulo p {
+            font-size: 15px;
+            color: #64748b;
+        }
+
+        /* STATUS */
+
+        .sistema-status {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: #f8fafc;
+            padding: 10px 15px;
+            border-radius: 30px;
+            font-size: 14px;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .status-indicador {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+        }
+
+        /* GRID */
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        /* CARDS */
+
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-titulo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-titulo h2 {
+            font-size: 18px;
+            color: #334155;
+        }
+
+        .card-titulo span {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        /* LEITURA */
+
+        .leitura {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .leitura-valor {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff6ff;
+            border: 8px solid #dbeafe;
+            flex-shrink: 0;
+        }
+
+        .leitura-valor strong {
+            font-size: 30px;
+            color: #2563eb;
+        }
+
+        .leitura-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .leitura-info .label {
+            font-size: 13px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .leitura-info .valor {
+            font-size: 18px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        /* CLASSIFICAÇÃO */
+
+        .classificacao {
+            min-height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .classificacao-label {
+            font-size: 13px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #classificacaoAtual {
+            font-size: 32px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        /* CORES DAS CLASSIFICAÇÕES */
+
+        .classificacao.ruim {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .classificacao.ruim #classificacaoAtual {
+            color: #dc2626;
+        }
+
+        .classificacao.media {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .classificacao.media #classificacaoAtual {
+            color: #d97706;
+        }
+
+        .classificacao.boa {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .classificacao.boa #classificacaoAtual {
+            color: #16a34a;
+        }
+
+        /* ÚLTIMA ATUALIZAÇÃO */
+
+        .ultima-atualizacao {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* HISTÓRICO */
+
+        .historico-card {
+            margin-bottom: 24px;
+        }
+
+        .tabela-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8fafc;
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 15px 16px;
+            font-size: 14px;
+            color: #475569;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .valor-tabela {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-boa {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-media {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-ruim {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* ESTADO VAZIO */
+
+        .historico-vazio {
+            text-align: center;
+            padding: 35px 20px;
+            color: #94a3b8;
+        }
+
+        /* FOOTER */
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+            padding-top: 5px;
+        }
+
+        /* RESPONSIVIDADE */
+
+        @media (max-width: 800px) {
+
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .sistema-status {
+                width: fit-content;
+            }
+        }
+
+        @media (max-width: 500px) {
+
+            .container {
+                width: 94%;
+                padding-top: 18px;
+            }
+
+            header {
+                padding: 22px;
+            }
+
+            .titulo h1 {
+                font-size: 24px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .leitura {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .leitura-valor {
+                width: 95px;
+                height: 95px;
+            }
+
+            #classificacaoAtual {
+                font-size: 26px;
+            }
+
+            th,
+            td {
+                padding: 12px 10px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <main class="container">
+
+        <!-- CABEÇALHO -->
+
+        <header>
+
+            <div class="header-content">
+
+                <div class="titulo">
+
+                    <h1>
+                        Monitor de Satisfação
+                    </h1>
+
+                    <p>
+                        Sistema de aquisição, classificação
+                        e monitoramento de dados
+                    </p>
+
+                </div>
+
+                <div class="sistema-status">
+
+                    <span
+                        class="status-indicador"
+                        id="statusIndicador"
+                    ></span>
+
+                    <span id="statusTexto">
+                        Sistema conectado
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- STATUS ATUAL -->
+
+        <section class="status-grid">
+
+            <!-- LEITURA ATUAL -->
+
+            <div class="card">
+
+                <div class="card-titulo">
+
+                    <h2>
+                        Leitura atual
+                    </h2>
+
+                    <span>
+                        Potenciômetro
+                    </span>
+
+                </div>
+
+                <div class="leitura">
+
+                    <div class="leitura-valor">
+
+                        <strong id="satisfacaoAtual">
+                            --
+                        </strong>
+
+                    </div>
+
+                    <div class="leitura-info">
+
+                        <span class="label">
+                            Nível de satisfação
+                        </span>
+
+                        <span
+                            class="valor"
+                            id="escalaAtual"
+                        >
+                            Aguardando leitura
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="ultima-atualizacao">
+
+                    <span>
+                        Última atualização:
+                    </span>
+
+                    <strong id="ultimaAtualizacao">
+                        --
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- CLASSIFICAÇÃO -->
+
+            <div class="card">
+
+                <div class="card-titulo">
+
+                    <h2>
+                        Classificação
+                    </h2>
+
+                    <span>
+                        Inteligência Artificial
+                    </span>
+
+                </div>
+
+                <div
+                    class="classificacao"
+                    id="classificacaoContainer"
+                >
+
+                    <span class="classificacao-label">
+                        Estado atual
+                    </span>
+
+                    <strong id="classificacaoAtual">
+                        --
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- HISTÓRICO -->
+
+        <section class="card historico-card">
+
+            <div class="card-titulo">
+
+                <h2>
+                    Histórico das medições
+                </h2>
+
+                <span id="quantidadeMedicoes">
+                    0 medições
+                </span>
+
+            </div>
+
+            <div class="tabela-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Horário
+                            </th>
+
+                            <th>
+                                Satisfação
+                            </th>
+
+                            <th>
+                                Classificação
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="historico">
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                class="historico-vazio"
+                            >
+                                Aguardando as primeiras
+                                medições do sistema...
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- RODAPÉ -->
+
+        <footer>
+
+            Sistema de Monitoramento de Satisfação
+            — Projeto Integrado DS
+
+        </footer>
+
+    </main>
+
+
+    <script src="codigo.js"></script>
+
+</body>
+
+</html>

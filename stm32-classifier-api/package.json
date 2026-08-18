@@ -1,0 +1,12 @@
+{
+  "name": "medicoes-backend",
+  "version": "1.0.0",
+  "description": "Backend with /medicoes and /classificar routes; classification delegated to a Python scikit-learn KNN script",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
