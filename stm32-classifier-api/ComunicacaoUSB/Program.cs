@@ -1,58 +1,49 @@
 ﻿using System;
 using System.IO.Ports;
+using System.Text.Json;
 
 namespace ComunicacaoUSB
 {
-    class Program
+    public class DadosSTM32
     {
-        static SerialPort? serialPort;
+        public int Adc { get; set; }
+        public double Tensao { get; set; }
+        public double Porcentagem { get; set; }
+        public string? NivelSatisfacao { get; set; }
+    }
+
+   static class Program
+    {
+        // PORTA FIXA
+      static readonly SerialPort serialPort = new("COM10", 115200, Parity.None, 8, StopBits.One);
+
 
         static void Main()
         {
-            Console.WriteLine("Portas COM disponíveis:");
-
-            string[] portas = SerialPort.GetPortNames();
-
-            foreach (string porta in portas)
-            {
-                Console.WriteLine(" - " + porta);
-            }
-
-            if (portas.Length == 0)
-            {
-                Console.WriteLine("Nenhuma porta COM encontrada.");
-                Console.ReadKey();
-                return;
-            }
-
-            string nomePorta = "COM10";
-
-            serialPort = new SerialPort(
-                nomePorta,
-                3000,
-                Parity.None,
-                8,
-                StopBits.One
-            );
-
-            serialPort.DataReceived += DadosRecebidos;
-
             try
             {
+                serialPort.NewLine = "\n";
+                serialPort.DataReceived += DadosRecebidos;
+
                 serialPort.Open();
 
-                Console.WriteLine();
-                Console.WriteLine("Conectado ao STM32!");
+                Console.WriteLine("==============================");
+                Console.WriteLine("STM32 conectado na COM10");
+                Console.WriteLine("BaudRate: 115200");
                 Console.WriteLine("Aguardando dados...");
-                Console.WriteLine("Pressione ENTER para sair.");
+                Console.WriteLine("==============================");
+                Console.WriteLine();
 
                 Console.ReadLine();
 
-                serialPort.Close();
+                if (serialPort.IsOpen)
+                {
+                    serialPort.Close();
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erro ao abrir a porta:");
+                Console.WriteLine("Erro ao abrir a COM10:");
                 Console.WriteLine(ex.Message);
             }
         }
@@ -63,17 +54,51 @@ namespace ComunicacaoUSB
         {
             try
             {
-                string dados = serialPort!.ReadLine();
+                while (serialPort.IsOpen && serialPort.BytesToRead > 0)
+                {
+                    string dados = serialPort.ReadLine().Trim();
 
-                Console.WriteLine(
-                    "STM32 -> C#: " + dados
-                );
+                    if (string.IsNullOrWhiteSpace(dados))
+                        continue;
+
+                    ConverterJson(dados);
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(
-                    "Erro ao receber dados: " + ex.Message
-                );
+                Console.WriteLine("Erro ao receber dados: " + ex.Message);
+            }
+        }
+
+        static void ConverterJson(string json)
+        {
+            try
+            {
+                DadosSTM32? dados =
+                    JsonSerializer.Deserialize<DadosSTM32>(json);
+
+                if (dados == null)
+                {
+                    Console.WriteLine("JSON inválido.");
+                    return;
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("================================");
+                Console.WriteLine("        DADOS DO STM32");
+                Console.WriteLine("================================");
+
+                Console.WriteLine($"ADC:              {dados.Adc}");
+                Console.WriteLine($"Tensão:           {dados.Tensao:F2} V");
+                Console.WriteLine($"Porcentagem:      {dados.Porcentagem:F2} %");
+                Console.WriteLine($"Nível satisfação: {dados.NivelSatisfacao}");
+
+                Console.WriteLine("================================");
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine("Erro ao converter JSON:");
+                Console.WriteLine(ex.Message);
             }
         }
     }

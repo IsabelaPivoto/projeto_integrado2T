@@ -5,7 +5,10 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <meta
         name="description"
@@ -13,10 +16,6 @@
     >
 
     <title>Monitor de Satisfação</title>
-
-
-
-
 
     <style>
 
@@ -119,6 +118,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 15px;
             margin-bottom: 20px;
         }
 
@@ -244,6 +244,64 @@
             border-top: 1px solid #e2e8f0;
             color: #64748b;
             font-size: 14px;
+        }
+
+        /* TESTE MANUAL */
+
+        .teste-manual {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+
+        .teste-manual h3 {
+            margin-bottom: 12px;
+            color: #334155;
+            font-size: 16px;
+        }
+
+        .teste-controles {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #medicaoManual {
+            width: 220px;
+            padding: 11px 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #medicaoManual:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        #btnEnviarManual {
+            padding: 11px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #btnEnviarManual:hover {
+            background: #1d4ed8;
+        }
+
+        #resultadoManual {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #64748b;
         }
 
         /* HISTÓRICO */
@@ -388,6 +446,14 @@
             th,
             td {
                 padding: 12px 10px;
+            }
+
+            #medicaoManual {
+                width: 100%;
+            }
+
+            #btnEnviarManual {
+                width: 100%;
             }
         }
 
@@ -540,23 +606,51 @@
 
             <div class="card-titulo">
 
-                <h2>Teste manual</h2>
+                <h2>
+                    Histórico de medições
+                </h2>
 
-    <input
-        type="number"
-        id="medicaoManual"
-        min="0"
-        max="10"
-        step="0.1"
-        placeholder="Digite de 0 a 10"
-    >
+                <span id="quantidadeMedicoes">
+                    0 medições
+                </span>
 
-    <button id="btnEnviarManual">
-        Enviar medição"
-    </button>
+            </div>
 
-    <p id="resultadoManual"></p>
-</div>
+
+            <!-- TESTE MANUAL -->
+
+            <div class="teste-manual">
+
+                <h3>
+                    Teste manual
+                </h3>
+
+                <div class="teste-controles">
+
+                    <input
+                        type="number"
+                        id="medicaoManual"
+                        min="0"
+                        max="10"
+                        step="0.1"
+                        placeholder="Digite de 0 a 10"
+                    >
+
+                    <button
+                        id="btnEnviarManual"
+                        type="button"
+                    >
+                        Enviar medição
+                    </button>
+
+                </div>
+
+                <p id="resultadoManual"></p>
+
+            </div>
+
+
+            <!-- TABELA -->
 
             <div class="tabela-container">
 
@@ -616,6 +710,8 @@
 
     </main>
 
+
+    <!-- JAVASCRIPT -->
 
     <script src="codigo.js"></script>
 

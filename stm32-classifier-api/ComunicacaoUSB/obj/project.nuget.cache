@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "DiZynjan9n8=",
+  "dgSpecHash": "rlomcaZOlTw=",
   "success": true,
-  "projectFilePath": "c:\\Users\\alunos\\OneDrive\\Desktop\\projetoIntegrado2TR\\projeto_integrado2T\\stm32-classifier-api\\ComunicacaoUSB\\ComunicacaoUSB.csproj",
+  "projectFilePath": "C:\\Users\\alunos\\OneDrive\\Desktop\\projetoIntegrado2TR\\projeto_integrado2T\\stm32-classifier-api\\ComunicacaoUSB\\ComunicacaoUSB.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\alunos\\.nuget\\packages\\runtime.android-arm.runtime.native.system.io.ports\\10.0.11\\runtime.android-arm.runtime.native.system.io.ports.10.0.11.nupkg.sha512",
     "C:\\Users\\alunos\\.nuget\\packages\\runtime.android-arm64.runtime.native.system.io.ports\\10.0.11\\runtime.android-arm64.runtime.native.system.io.ports.10.0.11.nupkg.sha512",

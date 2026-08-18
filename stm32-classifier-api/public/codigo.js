@@ -1,3 +1,7 @@
+// ==========================================
+// ELEMENTOS DO HTML
+// ==========================================
+
 const satisfacaoAtual =
     document.getElementById("satisfacaoAtual");
 
@@ -25,6 +29,15 @@ const statusIndicador =
 const statusTexto =
     document.getElementById("statusTexto");
 
+const medicaoManual =
+    document.getElementById("medicaoManual");
+
+const btnEnviarManual =
+    document.getElementById("btnEnviarManual");
+
+const resultadoManual =
+    document.getElementById("resultadoManual");
+
 
 // ==========================================
 // ADC → SATISFAÇÃO
@@ -32,10 +45,23 @@ const statusTexto =
 
 function converterAdcParaSatisfacao(adc) {
 
-    const satisfacao =
-        (Number(adc) / 4095) * 10;
+    const valor =
+        Number(adc);
 
-    return satisfacao;
+    if (
+        Number.isNaN(valor) ||
+        valor < 0
+    ) {
+        return null;
+    }
+
+    const satisfacao =
+        (valor / 4095) * 10;
+
+    return Math.min(
+        10,
+        Math.max(0, satisfacao)
+    );
 }
 
 
@@ -46,12 +72,16 @@ function converterAdcParaSatisfacao(adc) {
 function sistemaConectado() {
 
     if (statusIndicador) {
-        statusIndicador.style.background = "#22c55e";
+
+        statusIndicador.style.background =
+            "#22c55e";
+
         statusIndicador.style.boxShadow =
             "0 0 0 4px rgba(34, 197, 94, 0.15)";
     }
 
     if (statusTexto) {
+
         statusTexto.innerText =
             "Sistema conectado";
     }
@@ -61,12 +91,16 @@ function sistemaConectado() {
 function sistemaDesconectado() {
 
     if (statusIndicador) {
-        statusIndicador.style.background = "#ef4444";
+
+        statusIndicador.style.background =
+            "#ef4444";
+
         statusIndicador.style.boxShadow =
             "0 0 0 4px rgba(239, 68, 68, 0.15)";
     }
 
     if (statusTexto) {
+
         statusTexto.innerText =
             "Sistema desconectado";
     }
@@ -81,284 +115,353 @@ function atualizarClassificacao(classificacao) {
 
     if (!classificacao) {
 
-        classificacaoAtual.innerText = "--";
+        if (classificacaoAtual) {
+            classificacaoAtual.innerText = "--";
+        }
 
-        classificacaoContainer.className =
-            "classificacao";
+        if (classificacaoContainer) {
+
+            classificacaoContainer.className =
+                "classificacao";
+        }
 
         return;
     }
 
+
     const valor =
-        classificacao.toString()
+        classificacao
+            .toString()
             .toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
 
-    classificacaoAtual.innerText =
-        classificacao.toUpperCase();
 
-    classificacaoContainer.className =
-        "classificacao";
+    if (classificacaoAtual) {
 
-
-    if (valor === "boa" || valor === "bom" || valor === "good") {
-
-        classificacaoContainer.classList.add("boa");
-
+        classificacaoAtual.innerText =
+            classificacao.toUpperCase();
     }
 
-    else if (
-        valor === "media" ||
-        valor === "medio" ||
-        valor === "medium"
-    ) {
 
-        classificacaoContainer.classList.add("media");
+    if (classificacaoContainer) {
 
-    }
+        classificacaoContainer.className =
+            "classificacao";
 
-    else if (
-        valor === "ruim" ||
-        valor === "bad"
-    ) {
 
-        classificacaoContainer.classList.add("ruim");
+        if (
+            valor === "boa" ||
+            valor === "bom" ||
+            valor === "good"
+        ) {
+
+            classificacaoContainer.classList.add(
+                "boa"
+            );
+
+        }
+
+        else if (
+            valor === "media" ||
+            valor === "medio" ||
+            valor === "medium"
+        ) {
+
+            classificacaoContainer.classList.add(
+                "media"
+            );
+
+        }
+
+        else if (
+            valor === "ruim" ||
+            valor === "bad"
+        ) {
+
+            classificacaoContainer.classList.add(
+                "ruim"
+            );
+        }
     }
 }
 
 
 // ==========================================
-// ATUALIZA DADOS
+// BUSCAR MEDIÇÕES
 // ==========================================
 
-async function atualizarDados() {
+async function buscarMedicoes() {
 
-    try {
+    const resposta =
+        await fetch(
+            "/medicoes",
+            {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json"
+                },
+                cache: "no-store"
+            }
+        );
 
-        const resposta =
-            await fetch("/medicoes");
+
+    if (!resposta.ok) {
+
+        throw new Error(
+            `Erro HTTP ${resposta.status}`
+        );
+    }
 
 
-        if (!resposta.ok) {
+    const dados =
+        await resposta.json();
 
-            throw new Error(
-                "Erro ao buscar medições."
-            );
+
+    if (!Array.isArray(dados)) {
+
+        throw new Error(
+            "A API não retornou uma lista de medições."
+        );
+    }
+
+
+    return dados;
+}
+
+
+// ==========================================
+// ATUALIZA LEITURA ATUAL
+// ==========================================
+
+function atualizarLeitura(dados) {
+
+    // Não existem medições ainda.
+    // Isso NÃO significa que o sistema está desconectado.
+
+    if (
+        !Array.isArray(dados) ||
+        dados.length === 0
+    ) {
+
+        if (satisfacaoAtual) {
+            satisfacaoAtual.innerText = "--";
         }
 
-
-        const dados =
-            await resposta.json();
-
-
-        console.log("Medições recebidas:", dados);
-
-
-        if (!Array.isArray(dados) || dados.length === 0) {
-
-            satisfacaoAtual.innerText = "--";
-
+        if (classificacaoAtual) {
             classificacaoAtual.innerText = "--";
+        }
 
+        if (ultimaAtualizacao) {
             ultimaAtualizacao.innerText = "--";
+        }
+
+        if (escalaAtual) {
 
             escalaAtual.innerText =
                 "Aguardando leitura";
-
-            sistemaDesconectado();
-
-            return;
         }
 
+        atualizarClassificacao(null);
 
-        // Pega a última medição
-
-        const ultima =
-            dados[dados.length - 1];
-
-
-        let satisfacao;
+        return;
+    }
 
 
-        // Se o servidor já enviar satisfação,
-        // usa esse valor.
+    // Última medição
 
-        if (ultima.satisfacao !== undefined) {
-
-            satisfacao =
-                Number(ultima.satisfacao);
-
-        }
-
-        // Caso contrário, converte o ADC.
-
-        else if (ultima.adc !== undefined) {
-
-            satisfacao =
-                converterAdcParaSatisfacao(
-                    ultima.adc
-                );
-
-        }
-
-        else {
-
-            satisfacao = null;
-        }
+    const ultima =
+        dados[dados.length - 1];
 
 
-        if (
-            satisfacao !== null &&
-            !Number.isNaN(satisfacao)
-        ) {
+    let satisfacao = null;
+
+
+    // Caso o backend já envie satisfação
+
+    if (
+        ultima.satisfacao !== undefined &&
+        ultima.satisfacao !== null
+    ) {
+
+        satisfacao =
+            Number(
+                ultima.satisfacao
+            );
+    }
+
+
+    // Caso o backend envie ADC
+
+    else if (
+        ultima.adc !== undefined &&
+        ultima.adc !== null
+    ) {
+
+        satisfacao =
+            converterAdcParaSatisfacao(
+                ultima.adc
+            );
+    }
+
+
+    // Atualiza valor
+
+    if (
+        satisfacao !== null &&
+        !Number.isNaN(satisfacao)
+    ) {
+
+        if (satisfacaoAtual) {
 
             satisfacaoAtual.innerText =
                 satisfacao.toFixed(1);
+        }
+
+        if (escalaAtual) {
 
             escalaAtual.innerText =
                 "Escala de 0 a 10";
-
         }
 
-        else {
+    }
+
+    else {
+
+        if (satisfacaoAtual) {
 
             satisfacaoAtual.innerText =
                 "--";
+        }
+
+        if (escalaAtual) {
 
             escalaAtual.innerText =
                 "Aguardando leitura";
         }
+    }
 
 
-        atualizarClassificacao(
-            ultima.classificacao
-        );
+    // Atualiza classificação
+
+    atualizarClassificacao(
+        ultima.classificacao
+    );
 
 
-        if (ultima.horario) {
+    // Atualiza horário
 
-            const data =
-                new Date(ultima.horario);
+    if (
+        ultima.horario
+    ) {
 
-            ultimaAtualizacao.innerText =
-                data.toLocaleString("pt-BR");
+        const data =
+            new Date(
+                ultima.horario
+            );
+
+
+        if (!Number.isNaN(data.getTime())) {
+
+            if (ultimaAtualizacao) {
+
+                ultimaAtualizacao.innerText =
+                    data.toLocaleString(
+                        "pt-BR"
+                    );
+            }
 
         }
 
         else {
 
-            ultimaAtualizacao.innerText =
-                "--";
+            if (ultimaAtualizacao) {
+
+                ultimaAtualizacao.innerText =
+                    "--";
+            }
         }
-
-
-        sistemaConectado();
 
     }
 
-    catch (erro) {
+    else {
 
-        console.error(
-            "Erro ao atualizar dados:",
-            erro
-        );
+        if (ultimaAtualizacao) {
 
-
-        satisfacaoAtual.innerText =
-            "--";
-
-        classificacaoAtual.innerText =
-            "--";
-
-        ultimaAtualizacao.innerText =
-            "--";
-
-        escalaAtual.innerText =
-            "Sem conexão com a API";
-
-
-        sistemaDesconectado();
+            ultimaAtualizacao.innerText =
+                "--";
+        }
     }
 }
 
 
 // ==========================================
-// HISTÓRICO
+// ATUALIZA HISTÓRICO
 // ==========================================
 
-async function atualizarHistorico() {
+function atualizarHistorico(dados) {
 
-    try {
-
-        const resposta =
-            await fetch("/medicoes");
-
-
-        if (!resposta.ok) {
-
-            throw new Error(
-                "Erro ao buscar histórico."
-            );
-        }
+    if (!historico) {
+        return;
+    }
 
 
-        const dados =
-            await resposta.json();
+    historico.innerHTML = "";
 
 
-        console.log(
-            "Histórico recebido:",
-            dados
-        );
+    if (
+        !Array.isArray(dados) ||
+        dados.length === 0
+    ) {
+
+        historico.innerHTML = `
+            <tr>
+                <td
+                    colspan="3"
+                    class="historico-vazio"
+                >
+                    Aguardando as primeiras
+                    medições do sistema...
+                </td>
+            </tr>
+        `;
 
 
-        historico.innerHTML = "";
-
-
-        if (
-            !Array.isArray(dados) ||
-            dados.length === 0
-        ) {
-
-            historico.innerHTML = `
-                <tr>
-                    <td
-                        colspan="3"
-                        class="historico-vazio"
-                    >
-                        Aguardando as primeiras
-                        medições do sistema...
-                    </td>
-                </tr>
-            `;
-
+        if (quantidadeMedicoes) {
 
             quantidadeMedicoes.innerText =
                 "0 medições";
-
-
-            return;
         }
 
 
+        return;
+    }
+
+
+    if (quantidadeMedicoes) {
+
         quantidadeMedicoes.innerText =
-            dados.length +
-            (
-                dados.length === 1
-                    ? " medição"
-                    : " medições"
-            );
+            dados.length === 1
+                ? "1 medição"
+                : `${dados.length} medições`;
+    }
 
 
-        dados
-            .slice()
-            .reverse()
-            .forEach((medicao) => {
+    // Mais recente primeiro
+
+    dados
+        .slice()
+        .reverse()
+        .forEach(
+            (medicao) => {
 
                 const linha =
                     document.createElement("tr");
 
+
+                // --------------------------
+                // HORÁRIO
+                // --------------------------
 
                 let horario =
                     "Sem horário";
@@ -371,38 +474,76 @@ async function atualizarHistorico() {
                             medicao.horario
                         );
 
-                    horario =
-                        data.toLocaleString(
-                            "pt-BR"
-                        );
+
+                    if (
+                        !Number.isNaN(
+                            data.getTime()
+                        )
+                    ) {
+
+                        horario =
+                            data.toLocaleString(
+                                "pt-BR"
+                            );
+                    }
                 }
 
 
-                let satisfacao = "--";
+                // --------------------------
+                // SATISFAÇÃO
+                // --------------------------
+
+                let satisfacao =
+                    "--";
 
 
                 if (
                     medicao.satisfacao !==
-                    undefined
+                    undefined &&
+                    medicao.satisfacao !==
+                    null
                 ) {
 
-                    satisfacao =
+                    const valor =
                         Number(
                             medicao.satisfacao
-                        ).toFixed(1);
+                        );
 
+
+                    if (
+                        !Number.isNaN(valor)
+                    ) {
+
+                        satisfacao =
+                            valor.toFixed(1);
+                    }
                 }
+
 
                 else if (
-                    medicao.adc !== undefined
+                    medicao.adc !==
+                    undefined &&
+                    medicao.adc !==
+                    null
                 ) {
 
-                    satisfacao =
+                    const valor =
                         converterAdcParaSatisfacao(
                             medicao.adc
-                        ).toFixed(1);
+                        );
+
+
+                    if (valor !== null) {
+
+                        satisfacao =
+                            valor.toFixed(1);
+                    }
                 }
 
+
+                // --------------------------
+                // CLASSIFICAÇÃO
+                // --------------------------
 
                 const classificacao =
                     medicao.classificacao ||
@@ -420,37 +561,43 @@ async function atualizarHistorico() {
                         );
 
 
-                let classeBadge = "";
+                let classeBadge =
+                    "";
 
 
                 if (
                     classe === "boa" ||
-                    classe === "bom"
+                    classe === "bom" ||
+                    classe === "good"
                 ) {
 
                     classeBadge =
                         "badge-boa";
-
                 }
 
                 else if (
                     classe === "media" ||
-                    classe === "medio"
+                    classe === "medio" ||
+                    classe === "medium"
                 ) {
 
                     classeBadge =
                         "badge-media";
-
                 }
 
                 else if (
-                    classe === "ruim"
+                    classe === "ruim" ||
+                    classe === "bad"
                 ) {
 
                     classeBadge =
                         "badge-ruim";
                 }
 
+
+                // --------------------------
+                // MONTA LINHA
+                // --------------------------
 
                 linha.innerHTML = `
 
@@ -478,30 +625,276 @@ async function atualizarHistorico() {
                 historico.appendChild(
                     linha
                 );
+            }
+        );
+}
 
-            });
+
+// ==========================================
+// ATUALIZA TUDO
+// ==========================================
+
+async function atualizarSistema() {
+
+    try {
+
+        const dados =
+            await buscarMedicoes();
+
+
+        console.log(
+            "Medições recebidas:",
+            dados
+        );
+
+
+        // A API respondeu.
+        // Portanto, estamos conectados.
+
+        sistemaConectado();
+
+
+        atualizarLeitura(
+            dados
+        );
+
+
+        atualizarHistorico(
+            dados
+        );
 
     }
 
     catch (erro) {
 
         console.error(
-            "Erro ao atualizar histórico:",
+            "Erro ao atualizar sistema:",
             erro
         );
 
 
-        historico.innerHTML = `
-            <tr>
-                <td
-                    colspan="3"
-                    class="historico-vazio"
-                >
-                    Erro ao carregar histórico.
-                </td>
-            </tr>
-        `;
+        sistemaDesconectado();
+
+
+        if (satisfacaoAtual) {
+
+            satisfacaoAtual.innerText =
+                "--";
+        }
+
+
+        if (escalaAtual) {
+
+            escalaAtual.innerText =
+                "Sem conexão com a API";
+        }
+
+
+        if (classificacaoAtual) {
+
+            classificacaoAtual.innerText =
+                "--";
+        }
+
+
+        if (ultimaAtualizacao) {
+
+            ultimaAtualizacao.innerText =
+                "--";
+        }
+
+
+        if (historico) {
+
+            historico.innerHTML = `
+                <tr>
+                    <td
+                        colspan="3"
+                        class="historico-vazio"
+                    >
+                        Não foi possível conectar
+                        com o servidor.
+                    </td>
+                </tr>
+            `;
+        }
+
+
+        if (quantidadeMedicoes) {
+
+            quantidadeMedicoes.innerText =
+                "Sem conexão";
+        }
     }
+}
+
+
+// ==========================================
+// ENVIO DE MEDIÇÃO MANUAL
+// ==========================================
+
+async function enviarMedicaoManual() {
+
+    if (
+        !medicaoManual ||
+        !resultadoManual
+    ) {
+        return;
+    }
+
+
+    const valor =
+        Number(
+            medicaoManual.value
+        );
+
+
+    // Validação
+
+    if (
+        Number.isNaN(valor) ||
+        valor < 0 ||
+        valor > 10
+    ) {
+
+        resultadoManual.innerText =
+            "Digite um valor entre 0 e 10.";
+
+        resultadoManual.style.color =
+            "#dc2626";
+
+        return;
+    }
+
+
+    // Desabilita botão
+
+    if (btnEnviarManual) {
+
+        btnEnviarManual.disabled =
+            true;
+
+        btnEnviarManual.innerText =
+            "Enviando...";
+    }
+
+
+    resultadoManual.innerText =
+        "Enviando medição...";
+
+    resultadoManual.style.color =
+        "#64748b";
+
+
+    try {
+
+        const resposta =
+            await fetch(
+                "/medicoes",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        satisfacao:
+                            valor
+                    })
+                }
+            );
+
+
+        if (!resposta.ok) {
+
+            throw new Error(
+                `Erro HTTP ${resposta.status}`
+            );
+        }
+
+
+        resultadoManual.innerText =
+            "Medição enviada com sucesso!";
+
+        resultadoManual.style.color =
+            "#16a34a";
+
+
+        medicaoManual.value =
+            "";
+
+
+        // Atualiza os dados imediatamente
+
+        await atualizarSistema();
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "Erro ao enviar medição:",
+            erro
+        );
+
+
+        resultadoManual.innerText =
+            "Erro ao enviar medição. Verifique se o servidor está conectado.";
+
+        resultadoManual.style.color =
+            "#dc2626";
+    }
+
+
+    finally {
+
+        if (btnEnviarManual) {
+
+            btnEnviarManual.disabled =
+                false;
+
+            btnEnviarManual.innerText =
+                "Enviar medição";
+        }
+    }
+}
+
+
+// ==========================================
+// BOTÃO DE MEDIÇÃO MANUAL
+// ==========================================
+
+if (btnEnviarManual) {
+
+    btnEnviarManual.addEventListener(
+        "click",
+        enviarMedicaoManual
+    );
+}
+
+
+// Permite pressionar Enter no campo
+
+if (medicaoManual) {
+
+    medicaoManual.addEventListener(
+        "keydown",
+        (evento) => {
+
+            if (
+                evento.key === "Enter"
+            ) {
+
+                enviarMedicaoManual();
+            }
+        }
+    );
 }
 
 
@@ -511,19 +904,32 @@ async function atualizarHistorico() {
 
 async function inicializar() {
 
-    await atualizarDados();
+    console.log(
+        "Iniciando Monitor de Satisfação..."
+    );
 
-    await atualizarHistorico();
+
+    await atualizarSistema();
+
+
+    console.log(
+        "Sistema inicializado."
+    );
 }
 
 
 inicializar();
 
 
-setInterval(() => {
+// ==========================================
+// ATUALIZA A CADA 3 SEGUNDOS
+// ==========================================
 
-    atualizarDados();
+setInterval(
+    () => {
 
-    atualizarHistorico();
+        atualizarSistema();
 
-}, 3000);
+    },
+    3000
+);

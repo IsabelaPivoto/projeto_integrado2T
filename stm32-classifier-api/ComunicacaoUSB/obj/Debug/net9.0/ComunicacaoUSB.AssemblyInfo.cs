@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ComunicacaoUSB")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b8e80b814a4c036cc51e5e76fd996b2939b63871")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1987818d5751b4db12e7fe2bb2b607b62a2e9aad")]
 [assembly: System.Reflection.AssemblyProductAttribute("ComunicacaoUSB")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ComunicacaoUSB")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
