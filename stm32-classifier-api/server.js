@@ -219,12 +219,14 @@ function classificarComIA(satisfacao) {
             );
 
 
-            python.stdin.write(
-                JSON.stringify({
-                    satisfacao:
-                        satisfacao
-                })
-            );
+           const adc = (satisfacao / 10) * 4095;
+
+python.stdin.write(
+    JSON.stringify({
+        adc: adc
+    })
+);
+
 
 
             python.stdin.end();
