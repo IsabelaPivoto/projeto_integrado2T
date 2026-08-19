@@ -8,5 +8,30 @@
     "satisfacao": 10,
     "classificacao": "Bom",
     "horario": "2026-08-18T17:11:02.033Z"
+  },
+  {
+    "satisfacao": 0,
+    "classificacao": "Ruim",
+    "horario": "2026-08-18T17:18:33.023Z"
+  },
+  {
+    "satisfacao": 5,
+    "classificacao": "Medio",
+    "horario": "2026-08-18T17:18:37.521Z"
+  },
+  {
+    "satisfacao": 0,
+    "classificacao": "Ruim",
+    "horario": "2026-08-18T17:18:48.782Z"
+  },
+  {
+    "satisfacao": 6,
+    "classificacao": "Medio",
+    "horario": "2026-08-18T17:18:56.121Z"
+  },
+  {
+    "satisfacao": 8,
+    "classificacao": "Bom",
+    "horario": "2026-08-18T17:19:07.037Z"
   }
 ]
