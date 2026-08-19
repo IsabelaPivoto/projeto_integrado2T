@@ -33,5 +33,10 @@
     "satisfacao": 8,
     "classificacao": "Bom",
     "horario": "2026-08-18T17:19:07.037Z"
+  },
+  {
+    "satisfacao": 2,
+    "classificacao": "Ruim",
+    "horario": "2026-08-19T13:13:32.379Z"
   }
 ]
